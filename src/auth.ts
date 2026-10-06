@@ -8,17 +8,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ account, profile }) {
-      if (account?.provider !== "google" || !isAllowedGoogleProfile(profile)) return false;
+      if (account?.provider !== "google" || !isAllowedGoogleProfile(profile)) {
+        console.warn("[auth] ログイン拒否", {
+          provider: account?.provider,
+          email: profile?.email,
+          hd: profile?.hd,
+          email_verified: profile?.email_verified,
+        });
+        return false;
+      }
       const email = profile!.email!.toLowerCase();
       const name = (profile!.name as string | undefined) ?? null;
       const image = (profile!.picture as string | undefined) ?? null;
-      await getDb()
-        .insert(schema.users)
-        .values({ email, name, image })
-        .onConflictDoUpdate({
-          target: schema.users.email,
-          set: { name, image, lastLoginAt: new Date() },
-        });
+      // ユーザー記録はログイン可否に影響させない(DB未接続でもログインはできるようにする)
+      try {
+        await getDb()
+          .insert(schema.users)
+          .values({ email, name, image })
+          .onConflictDoUpdate({
+            target: schema.users.email,
+            set: { name, image, lastLoginAt: new Date() },
+          });
+      } catch (e) {
+        console.error("[auth] ユーザー記録の保存に失敗", e);
+      }
       return true;
     },
   },
