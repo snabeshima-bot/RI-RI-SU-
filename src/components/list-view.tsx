@@ -12,7 +12,7 @@ export function ListView({ releases, today, showPast }: { releases: ReleaseRow[]
 
   return (
     <div className="card overflow-x-auto">
-      <table className="w-full min-w-[960px] text-sm">
+      <table className="w-full min-w-[1180px] text-sm">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
             <th className="px-4 py-2.5 font-semibold">リリース</th>
@@ -29,7 +29,7 @@ export function ListView({ releases, today, showPast }: { releases: ReleaseRow[]
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={6} className="py-12 text-center text-slate-400">
+              <td colSpan={8} className="py-12 text-center text-slate-400">
                 リリースがありません
               </td>
             </tr>
@@ -53,7 +53,7 @@ export function ListView({ releases, today, showPast }: { releases: ReleaseRow[]
                 const done = m.doneKey ? r[m.doneKey] : false;
                 if (!date) return <td key={m.key} className="px-3 py-2.5 text-slate-300">—</td>;
                 const days = diffDays(date, today);
-                const past = days < 0 && (m.kind === "release" || done);
+                const past = days < 0 && (m.kind !== "submission" || done);
                 return (
                   <td key={m.key} className="px-3 py-2.5">
                     <div className={clsx("font-semibold tabular-nums", past && "text-slate-400")}>{formatJa(date)}</div>

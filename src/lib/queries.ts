@@ -34,6 +34,8 @@ export async function listReleases(artistId?: number): Promise<ReleaseRow[]> {
       jacketSubmission: releases.jacketSubmission,
       karaokeRelease: releases.karaokeRelease,
       karaokeSubmission: releases.karaokeSubmission,
+      teaserShoot: releases.teaserShoot,
+      teaserRelease: releases.teaserRelease,
       musicSubmitted: releases.musicSubmitted,
       jacketSubmitted: releases.jacketSubmitted,
       karaokeSubmitted: releases.karaokeSubmitted,

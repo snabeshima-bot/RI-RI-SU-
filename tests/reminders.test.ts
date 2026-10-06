@@ -7,6 +7,8 @@ const base = {
   jacketSubmission: null,
   karaokeRelease: null,
   karaokeSubmission: null,
+  teaserShoot: null,
+  teaserRelease: null,
   musicSubmitted: false,
   jacketSubmitted: false,
   karaokeSubmitted: false,

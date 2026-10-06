@@ -36,6 +36,8 @@ export async function GET(req: Request) {
         eq(releases.jacketSubmission, target),
         eq(releases.karaokeRelease, target),
         eq(releases.karaokeSubmission, target),
+        eq(releases.teaserShoot, target),
+        eq(releases.teaserRelease, target),
       ),
     );
 

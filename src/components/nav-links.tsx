@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/", label: "スケジュール" },
   { href: "/releases/new", label: "登録", mobileOnly: true },
   { href: "/artists", label: "アーティスト" },
+  { href: "/import", label: "一括取り込み" },
   { href: "/settings", label: "通知設定" },
 ];
 

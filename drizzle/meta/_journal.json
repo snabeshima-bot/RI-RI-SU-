@@ -8,6 +8,20 @@
       "when": 1791268509874,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791279936339,
+      "tag": "0001_teaser",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791279937476,
+      "tag": "0002_seed_imahako",
+      "breakpoints": true
     }
   ]
 }

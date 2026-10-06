@@ -8,6 +8,7 @@ import { requireUser } from "@/auth";
 import { getDb, schema } from "@/db";
 import { appUrl } from "@/lib/app-url";
 import { isValidDate } from "@/lib/dates";
+import { MILESTONE_KEYS } from "@/lib/milestones";
 import { deleteReleaseFromCalendar, syncReleaseToCalendar } from "@/lib/gcal";
 
 const { artists, releases, tracks, users, subscriptions } = schema;
@@ -30,6 +31,8 @@ const releaseSchema = z.object({
   jacketSubmission: optionalDate,
   karaokeRelease: optionalDate,
   karaokeSubmission: optionalDate,
+  teaserShoot: optionalDate,
+  teaserRelease: optionalDate,
   musicSubmitted: z.boolean(),
   jacketSubmitted: z.boolean(),
   karaokeSubmitted: z.boolean(),
@@ -55,6 +58,8 @@ function parseRelease(fd: FormData) {
     jacketSubmission: fd.get("jacketSubmission") ?? "",
     karaokeRelease: fd.get("karaokeRelease") ?? "",
     karaokeSubmission: fd.get("karaokeSubmission") ?? "",
+    teaserShoot: fd.get("teaserShoot") ?? "",
+    teaserRelease: fd.get("teaserRelease") ?? "",
     musicSubmitted: fd.get("musicSubmitted") === "on",
     jacketSubmitted: fd.get("jacketSubmitted") === "on",
     karaokeSubmitted: fd.get("karaokeSubmitted") === "on",
@@ -142,6 +147,36 @@ export async function deleteRelease(fd: FormData) {
   await db.delete(releases).where(eq(releases.id, id));
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+// ---------- 一括取り込み ----------
+
+const importSchema = z.object({
+  artistId: z.coerce.number().int().positive({ message: "アーティストを選択してください" }),
+  rows: z
+    .array(
+      z.object({
+        title: z.string().trim().min(1).max(200),
+        dates: z.partialRecord(z.enum(MILESTONE_KEYS), z.string().refine(isValidDate)),
+      }),
+    )
+    .min(1, "取り込む行がありません")
+    .max(200),
+});
+
+export async function importReleases(input: unknown): Promise<FormState & { count?: number }> {
+  const user = await requireUser();
+  const parsed = importSchema.safeParse(input);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "取り込み内容を確認してください" };
+  const { artistId, rows } = parsed.data;
+  const db = getDb();
+  const created = await db
+    .insert(releases)
+    .values(rows.map((r) => ({ artistId, title: r.title, type: "single", ...r.dates, createdBy: user.email, updatedBy: user.email })))
+    .returning({ id: releases.id });
+  for (const { id } of created) await syncCalendar(id);
+  revalidatePath("/", "layout");
+  return { ok: `${created.length}件を登録しました`, count: created.length };
 }
 
 // ---------- アーティスト ----------

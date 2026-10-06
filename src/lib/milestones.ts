@@ -1,8 +1,10 @@
 // 5種類の日付(マイルストーン)の定義。表示順・色・リマインド対象はすべてここで管理する。
 
 export const MILESTONE_KEYS = [
+  "teaserShoot",
   "musicSubmission",
   "jacketSubmission",
+  "teaserRelease",
   "release",
   "karaokeSubmission",
   "karaokeRelease",
@@ -16,7 +18,8 @@ export type MilestoneDef = {
   key: MilestoneKey;
   label: string;
   short: string;
-  kind: "submission" | "release";
+  /** submission=入稿(完了チェックあり・丸), release=公開/配信(ひし形), event=撮影など(四角) */
+  kind: "submission" | "release" | "event";
   /** 入稿系のみ:完了フラグのカラム */
   doneKey?: DoneKey;
   /** マーカー・バッジの色 */
@@ -26,6 +29,14 @@ export type MilestoneDef = {
 };
 
 export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
+  teaserShoot: {
+    key: "teaserShoot",
+    label: "ティザー撮影日",
+    short: "ティザー撮影",
+    kind: "event",
+    color: "#65a30d",
+    soft: "#ecfccb",
+  },
   musicSubmission: {
     key: "musicSubmission",
     label: "楽曲データ入稿日",
@@ -43,6 +54,14 @@ export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
     doneKey: "jacketSubmitted",
     color: "#d97706",
     soft: "#fef3c7",
+  },
+  teaserRelease: {
+    key: "teaserRelease",
+    label: "ティザー公開日",
+    short: "ティザー公開",
+    kind: "release",
+    color: "#7c3aed",
+    soft: "#ede9fe",
   },
   release: {
     key: "release",

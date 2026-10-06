@@ -11,6 +11,7 @@ type TrackInput = { key: number; title: string; isrc: string };
 
 const GROUPS: { title: string; keys: MilestoneKey[] }[] = [
   { title: "配信", keys: ["musicSubmission", "jacketSubmission", "release"] },
+  { title: "ティザー", keys: ["teaserShoot", "teaserRelease"] },
   { title: "カラオケ", keys: ["karaokeSubmission", "karaokeRelease"] },
 ];
 
@@ -93,12 +94,12 @@ export function ReleaseForm({
               {g.keys.map((k) => {
                 const m = MILESTONES[k];
                 return (
-                  <div key={k} className="flex flex-wrap items-center gap-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: m.soft }}>
-                    <MilestoneMarker milestone={k} size={14} />
-                    <label htmlFor={k} className="min-w-0 flex-1 text-sm font-semibold" style={{ color: m.color }}>
+                  <div key={k} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: m.soft }}>
+                    <label htmlFor={k} className="flex w-full items-center gap-2 text-sm font-semibold" style={{ color: m.color }}>
+                      <MilestoneMarker milestone={k} size={14} />
                       {m.label}
                     </label>
-                    <input id={k} name={k} type="date" className="input w-40" defaultValue={release?.[k] ?? ""} />
+                    <input id={k} name={k} type="date" className="input w-44" defaultValue={release?.[k] ?? ""} />
                     {m.doneKey && (
                       <label className="flex items-center gap-1.5 text-sm text-slate-700">
                         <input type="checkbox" name={m.doneKey} defaultChecked={release?.[m.doneKey] ?? false} className="h-4 w-4 accent-emerald-600" />

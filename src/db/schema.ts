@@ -33,6 +33,8 @@ export const releases = pgTable("releases", {
   jacketSubmission: date("jacket_submission_date"),
   karaokeRelease: date("karaoke_release_date"),
   karaokeSubmission: date("karaoke_submission_date"),
+  teaserShoot: date("teaser_shoot_date"),
+  teaserRelease: date("teaser_release_date"),
 
   musicSubmitted: boolean("music_submitted").notNull().default(false),
   jacketSubmitted: boolean("jacket_submitted").notNull().default(false),

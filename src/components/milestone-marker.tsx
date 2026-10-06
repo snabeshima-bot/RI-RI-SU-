@@ -1,7 +1,7 @@
 import clsx from "clsx";
-import { MILESTONES, type MilestoneKey } from "@/lib/milestones";
+import { MILESTONES, MILESTONE_LIST, type MilestoneKey } from "@/lib/milestones";
 
-/** リリース系=ひし形、入稿系=丸。完了済みはチェック、期限切れ未完了は赤枠。 */
+/** 公開・配信系=ひし形、入稿系=丸、撮影など=四角。完了済みはチェック、期限切れ未完了は赤枠。 */
 export function MilestoneMarker({
   milestone,
   done = false,
@@ -16,14 +16,15 @@ export function MilestoneMarker({
   className?: string;
 }) {
   const m = MILESTONES[milestone];
-  const isRelease = m.kind === "release";
+  const shape =
+    m.kind === "release" ? "rotate-45 scale-[0.8] rounded-[3px]" : m.kind === "event" ? "scale-[0.85] rounded-[3px]" : "rounded-full";
   return (
     <span
       className={clsx("relative inline-flex shrink-0 items-center justify-center", className)}
       style={{ width: size, height: size }}
     >
       <span
-        className={clsx("absolute inset-0 border-2", isRelease ? "rotate-45 scale-[0.8] rounded-[3px]" : "rounded-full")}
+        className={clsx("absolute inset-0 border-2", shape)}
         style={{
           backgroundColor: done ? "#fff" : m.color,
           borderColor: overdue ? "#dc2626" : m.color,
@@ -42,10 +43,10 @@ export function MilestoneMarker({
 export function MilestoneLegend() {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-600">
-      {(["musicSubmission", "jacketSubmission", "release", "karaokeSubmission", "karaokeRelease"] as const).map((k) => (
-        <span key={k} className="inline-flex items-center gap-1.5">
-          <MilestoneMarker milestone={k} size={12} />
-          {MILESTONES[k].label.replace(/日$/, "")}
+      {MILESTONE_LIST.map((m) => (
+        <span key={m.key} className="inline-flex items-center gap-1.5">
+          <MilestoneMarker milestone={m.key} size={12} />
+          {m.label.replace(/日$/, "")}
         </span>
       ))}
       <span className="inline-flex items-center gap-1.5 text-slate-400">
