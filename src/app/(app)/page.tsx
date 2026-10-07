@@ -8,21 +8,25 @@ import { MonthBoard } from "@/components/month-board";
 import { Roadmap } from "@/components/roadmap";
 import { Timeline } from "@/components/timeline/timeline";
 import { Upcoming } from "@/components/upcoming";
+import { VerticalTimeline } from "@/components/vertical-timeline";
 import { todayJST } from "@/lib/dates";
 import { listArtists, listReleases } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 const VIEWS = [
-  { key: "board", label: "タイムライン" },
+  { key: "timeline", label: "タイムライン" },
+  { key: "board", label: "ボード" },
   { key: "roadmap", label: "ロードマップ" },
   { key: "calendar", label: "カレンダー" },
   { key: "list", label: "一覧" },
   { key: "gantt", label: "ガント" },
 ] as const;
-const DEFAULT_VIEW = "board";
+const DEFAULT_VIEW = "timeline";
 /** 横幅を広く使うビュー(右の「直近の予定」を出さない) */
 const WIDE_VIEWS: string[] = ["board", "roadmap"];
+/** 「過去も表示」の切り替えがあるビュー */
+const PAST_VIEWS: string[] = ["list", "timeline", "roadmap"];
 type View = (typeof VIEWS)[number]["key"];
 
 type Search = { artist?: string; view?: string; month?: string; past?: string };
@@ -45,8 +49,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const merged = { artist: artistId ? String(artistId) : undefined, view, month: sp.month, past: sp.past, ...patch };
     if (merged.artist) p.set("artist", merged.artist);
     if (merged.view && merged.view !== DEFAULT_VIEW) p.set("view", merged.view);
-    if (merged.view !== "list" && merged.view !== "gantt" && merged.month) p.set("month", merged.month);
-    if (merged.view === "list" && merged.past) p.set("past", merged.past);
+    if ((merged.view === "board" || merged.view === "calendar") && merged.month) p.set("month", merged.month);
+    if (PAST_VIEWS.includes(merged.view) && merged.past) p.set("past", merged.past);
     const s = p.toString();
     return s ? `/?${s}` : "/";
   };
@@ -64,7 +68,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           {VIEWS.map((v) => (
             <Link
               key={v.key}
-              href={href({ view: v.key })}
+              href={href({ view: v.key, past: undefined, month: undefined })}
               scroll={false}
               className={clsx("whitespace-nowrap rounded-lg px-4 py-1.5 font-medium", view === v.key ? "bg-white shadow-sm" : "text-slate-600 hover:text-slate-900")}
             >
@@ -94,19 +98,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 </>
               )}
               {view === "roadmap" && (
-                <Roadmap
-                  artists={artists}
-                  releases={releases}
-                  today={today}
-                  from={month}
-                  hrefForMonth={(m) => href({ month: m })}
-                />
+                <Roadmap releases={releases} today={today} showAll={!!sp.past} toggleAllHref={href({ past: sp.past ? undefined : "1" })} />
               )}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-w-0 space-y-3">
                 <MilestoneLegend />
+                {view === "timeline" && (
+                  <VerticalTimeline
+                    releases={releases}
+                    today={today}
+                    showPast={!!sp.past}
+                    togglePastHref={href({ past: sp.past ? undefined : "1" })}
+                  />
+                )}
                 {view === "gantt" && <Timeline releases={releases} today={today} />}
                 {view === "calendar" && (
                   <CalendarView releases={releases} today={today} month={month} hrefForMonth={(m) => href({ month: m })} />
