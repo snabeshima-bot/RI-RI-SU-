@@ -42,18 +42,22 @@ export function MilestoneMarker({
 
 export function MilestoneLegend() {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-600">
+    <div className="flex flex-wrap items-center gap-2 text-[13px]">
       {MILESTONE_LIST.map((m) => (
-        <span key={m.key} className="inline-flex items-center gap-1.5">
+        <span
+          key={m.key}
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold"
+          style={{ backgroundColor: m.soft, color: m.color }}
+        >
           <MilestoneMarker milestone={m.key} size={12} />
           {m.label.replace(/日$/, "")}
         </span>
       ))}
-      <span className="inline-flex items-center gap-1.5 text-slate-400">
+      <span className="inline-flex items-center gap-1.5 px-1 text-slate-500">
         <MilestoneMarker milestone="musicSubmission" size={12} done />
         入稿済み
       </span>
-      <span className="inline-flex items-center gap-1.5 text-slate-400">
+      <span className="inline-flex items-center gap-1.5 px-1 text-slate-500">
         <MilestoneMarker milestone="musicSubmission" size={12} overdue />
         期限超過
       </span>
