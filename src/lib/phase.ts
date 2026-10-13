@@ -1,28 +1,41 @@
 import { MILESTONES, milestonesOf, type MilestoneItem, type MilestoneSource } from "./milestones";
 
 export const PHASES = [
-  { key: "unscheduled", label: "日程未定", description: "リリース日が未入力" },
-  { key: "production", label: "制作中", description: "未完了の提出・入稿がある" },
-  { key: "waiting", label: "入稿済み・公開待ち", description: "提出・入稿がすべて完了" },
-  { key: "released", label: "リリース済み", description: "リリース日を過ぎた" },
+  { key: "unscheduled", label: "日程未定", description: "日付が未入力" },
+  { key: "production", label: "制作中", description: "DEMO・REC・MASTERが残っている" },
+  { key: "submission", label: "入稿待ち", description: "入稿作業が残っている" },
+  { key: "waiting", label: "リリース待ち", description: "入稿完了・配信待ち" },
+  { key: "released", label: "リリース済み", description: "配信まで完了" },
 ] as const;
 
 export type Phase = (typeof PHASES)[number]["key"];
 
-type PhaseSource = MilestoneSource & { release: string | null };
+/**
+ * リリースの段階を判定する(上から順に当てはまったもの)。日付の入っていない工程は判定に使わない。
+ * 1. 日程未定:日付が1つも無い
+ * 2. 制作中:DEMO・MASTERが未提出、または REC日が今日以降
+ * 3. 入稿待ち:楽曲・ジャケット・カラオケのデータ入稿が未完了
+ * 4. リリース待ち:楽曲リリース日が未入力、または楽曲リリース日・カラオケ配信日が今日以降
+ * 5. リリース済み
+ * ティザー(撮影・公開)はプロモーションなので段階判定には使わない。
+ */
+export function releasePhase(r: MilestoneSource, today: string): Phase {
+  if (milestonesOf(r).length === 0) return "unscheduled";
+  const pending = (date: string | null, done: boolean) => !!date && !done;
+  const upcoming = (date: string | null) => !!date && date >= today;
 
-/** DEMO・MASTER提出と楽曲・ジャケット入稿の完了状況、リリース日から、リリースの段階を判定する */
-export function releasePhase(r: PhaseSource, today: string): Phase {
-  if (!r.release) return "unscheduled";
-  if (r.release <= today) return "released";
-  const submissions = [
-    { date: r.demoDeadline, done: r.demoSubmitted },
-    { date: r.masterDeadline, done: r.masterSubmitted },
-    { date: r.musicSubmission, done: r.musicSubmitted },
-    { date: r.jacketSubmission, done: r.jacketSubmitted },
-  ].filter((s) => s.date);
-  if (submissions.length === 0 || submissions.some((s) => !s.done)) return "production";
-  return "waiting";
+  if (pending(r.demoDeadline, r.demoSubmitted) || pending(r.masterDeadline, r.masterSubmitted) || upcoming(r.recording)) {
+    return "production";
+  }
+  if (
+    pending(r.musicSubmission, r.musicSubmitted) ||
+    pending(r.jacketSubmission, r.jacketSubmitted) ||
+    pending(r.karaokeSubmission, r.karaokeSubmitted)
+  ) {
+    return "submission";
+  }
+  if (!r.release || upcoming(r.release) || upcoming(r.karaokeRelease)) return "waiting";
+  return "released";
 }
 
 export type Step = MilestoneItem & { state: "done" | "next" | "todo" };

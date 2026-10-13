@@ -10,7 +10,8 @@ const RELEASED_RECENT_DAYS = 90;
 
 const PHASE_STYLE: Record<Phase, { head: string; dot: string }> = {
   unscheduled: { head: "bg-slate-100 text-slate-600", dot: "bg-slate-400" },
-  production: { head: "bg-amber-100 text-amber-800", dot: "bg-amber-500" },
+  production: { head: "bg-rose-100 text-rose-800", dot: "bg-rose-500" },
+  submission: { head: "bg-amber-100 text-amber-800", dot: "bg-amber-500" },
   waiting: { head: "bg-indigo-100 text-indigo-800", dot: "bg-indigo-500" },
   released: { head: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-500" },
 };
@@ -45,14 +46,17 @@ export function Roadmap({
           {showAll ? "✓ リリース済みをすべて表示中" : `リリース済みをすべて表示(今は直近${RELEASED_RECENT_DAYS}日)`}
         </Link>
       </div>
-      <div className="-mx-4 grid snap-x snap-mandatory auto-cols-[300px] grid-flow-col gap-4 overflow-x-auto px-4 pb-3 lg:mx-0 lg:grid-flow-row lg:grid-cols-4 lg:px-0">
+      <div className="-mx-4 grid snap-x snap-mandatory auto-cols-[280px] grid-flow-col gap-3 overflow-x-auto px-4 pb-3 xl:mx-0 xl:grid-flow-row xl:grid-cols-5 xl:px-0">
         {columns.map((col) => (
           <section key={col.key} className="flex snap-start flex-col rounded-2xl border border-slate-200 bg-slate-100/70">
             <header className={clsx("flex items-center justify-between rounded-t-2xl px-4 py-3", PHASE_STYLE[col.key].head)}>
-              <h3 className="flex items-center gap-2 text-base font-bold">
-                <span className={clsx("h-2.5 w-2.5 rounded-full", PHASE_STYLE[col.key].dot)} />
-                {col.label}
-              </h3>
+              <div>
+                <h3 className="flex items-center gap-2 text-base font-bold">
+                  <span className={clsx("h-2.5 w-2.5 rounded-full", PHASE_STYLE[col.key].dot)} />
+                  {col.label}
+                </h3>
+                <p className="text-[11px] opacity-80">{col.description}</p>
+              </div>
               <span className="text-sm font-semibold">{col.items.length}件</span>
             </header>
             <div className="flex flex-1 flex-col gap-3 p-3">
@@ -83,6 +87,7 @@ function RoadmapCard({ release: r, today }: { release: ReleaseRow; today: string
       <div className="text-xs text-slate-500">
         {r.artistName} · {releaseTypeLabel(r.type)}
       </div>
+      {r.composers.length > 0 && <div className="mt-0.5 truncate text-xs text-slate-600">作曲:{r.composers.join("、")}</div>}
       {r.release && (
         <div className="mt-2 flex items-center gap-2">
           <span className="text-sm font-semibold text-indigo-700">★ {formatJa(r.release, true)}</span>

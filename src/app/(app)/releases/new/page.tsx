@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ReleaseForm } from "@/components/release-form";
-import { listArtists } from "@/lib/queries";
+import { listArtists, listWriters } from "@/lib/queries";
 
 export default async function NewReleasePage({ searchParams }: { searchParams: Promise<{ artist?: string }> }) {
   const { artist } = await searchParams;
-  const artists = await listArtists();
+  const [artists, writers] = await Promise.all([listArtists(), listWriters()]);
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <div>
@@ -18,7 +18,7 @@ export default async function NewReleasePage({ searchParams }: { searchParams: P
           先に<Link href="/artists" className="text-indigo-600 underline">アーティスト</Link>を登録してください。
         </div>
       ) : (
-        <ReleaseForm artists={artists} defaultArtistId={Number(artist) || undefined} />
+        <ReleaseForm artists={artists} writers={writers} defaultArtistId={Number(artist) || undefined} />
       )}
     </div>
   );

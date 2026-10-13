@@ -4,10 +4,12 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { saveRelease, type FormState } from "@/app/actions";
 import { MilestoneMarker } from "@/components/milestone-marker";
-import type { Artist, Release, Track } from "@/db/schema";
+import { WriterPicker } from "@/components/writer-picker";
+import type { Artist, Release, Track, Writer } from "@/db/schema";
+import { CREDIT_ROLES, emptyCredits, type CreditRole, type TrackCredits } from "@/lib/credits";
 import { MILESTONES, RELEASE_TYPES, type MilestoneKey } from "@/lib/milestones";
 
-type TrackInput = { key: number; title: string; isrc: string };
+type TrackInput = { key: number; title: string; isrc: string; credits: TrackCredits };
 
 const GROUPS: { title: string; keys: MilestoneKey[] }[] = [
   { title: "制作", keys: ["demoDeadline", "recording", "masterDeadline"] },
@@ -18,23 +20,31 @@ const GROUPS: { title: string; keys: MilestoneKey[] }[] = [
 
 export function ReleaseForm({
   artists,
+  writers: initialWriters,
   release,
   tracks = [],
   defaultArtistId,
 }: {
   artists: Artist[];
+  writers: Pick<Writer, "id" | "name">[];
   release?: Release;
-  tracks?: Track[];
+  tracks?: (Track & { credits: TrackCredits })[];
   defaultArtistId?: number;
 }) {
   const [state, action] = useActionState<FormState, FormData>(saveRelease, undefined);
   const [trackList, setTrackList] = useState<TrackInput[]>(() =>
-    tracks.length > 0 ? tracks.map((t, i) => ({ key: i, title: t.title, isrc: t.isrc })) : [{ key: 0, title: "", isrc: "" }],
+    tracks.length > 0
+      ? tracks.map((t, i) => ({ key: i, title: t.title, isrc: t.isrc, credits: t.credits }))
+      : [{ key: 0, title: "", isrc: "", credits: emptyCredits() }],
   );
+  // その場で追加した作家も選べるように、作家一覧は手元でも持つ
+  const [writers, setWriters] = useState(initialWriters);
   const [nextKey, setNextKey] = useState(trackList.length);
 
   const updateTrack = (key: number, patch: Partial<TrackInput>) =>
     setTrackList((ts) => ts.map((t) => (t.key === key ? { ...t, ...patch } : t)));
+  const setCredits = (key: number, role: CreditRole, ids: number[]) =>
+    setTrackList((ts) => ts.map((t) => (t.key === key ? { ...t, credits: { ...t.credits, [role]: ids } } : t)));
   const move = (index: number, dir: -1 | 1) =>
     setTrackList((ts) => {
       const j = index + dir;
@@ -47,7 +57,7 @@ export function ReleaseForm({
   return (
     <form action={action} className="space-y-5">
       {release && <input type="hidden" name="id" value={release.id} />}
-      <input type="hidden" name="tracks" value={JSON.stringify(trackList.map(({ title, isrc }) => ({ title, isrc })))} />
+      <input type="hidden" name="tracks" value={JSON.stringify(trackList.map(({ title, isrc, credits }) => ({ title, isrc, credits })))} />
 
       {state?.error && <div className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">{state.error}</div>}
 
@@ -122,16 +132,17 @@ export function ReleaseForm({
             type="button"
             className="btn-ghost text-indigo-600"
             onClick={() => {
-              setTrackList((ts) => [...ts, { key: nextKey, title: "", isrc: "" }]);
+              setTrackList((ts) => [...ts, { key: nextKey, title: "", isrc: "", credits: emptyCredits() }]);
               setNextKey((k) => k + 1);
             }}
           >
             + 曲を追加
           </button>
         </div>
-        <ol className="space-y-2">
+        <ol className="space-y-3">
           {trackList.map((t, i) => (
-            <li key={t.key} className="flex items-center gap-2">
+            <li key={t.key} className="rounded-xl border border-slate-200 p-3">
+              <div className="flex items-center gap-2">
               <span className="w-6 text-right text-sm font-semibold tabular-nums text-slate-400">{i + 1}</span>
               <input className="input flex-1" placeholder="曲名" value={t.title} onChange={(e) => updateTrack(t.key, { title: e.target.value })} />
               <input className="input w-40" placeholder="ISRC(任意)" value={t.isrc} onChange={(e) => updateTrack(t.key, { isrc: e.target.value })} />
@@ -149,6 +160,19 @@ export function ReleaseForm({
               >
                 ✕
               </button>
+              </div>
+              <div className="mt-2 grid gap-2 pl-8 md:grid-cols-3">
+                {CREDIT_ROLES.map((role) => (
+                  <WriterPicker
+                    key={role.key}
+                    label={role.label}
+                    writers={writers}
+                    selected={t.credits[role.key]}
+                    onChange={(ids) => setCredits(t.key, role.key, ids)}
+                    onWriterCreated={(w) => setWriters((ws) => (ws.some((x) => x.id === w.id) ? ws : [...ws, w]))}
+                  />
+                ))}
+              </div>
             </li>
           ))}
         </ol>

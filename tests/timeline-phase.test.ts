@@ -39,25 +39,42 @@ describe("buildTimeline", () => {
 });
 
 describe("releasePhase", () => {
-  it("4段階を判定する", () => {
+  const full = {
+    ...base,
+    demoDeadline: "2026-09-01",
+    recording: "2026-09-10",
+    masterDeadline: "2026-09-20",
+    musicSubmission: "2026-10-01",
+    jacketSubmission: "2026-10-01",
+    karaokeSubmission: "2026-10-01",
+    release: "2026-11-05",
+    karaokeRelease: "2026-11-20",
+  };
+  it("日付が無ければ日程未定", () => {
     expect(releasePhase({ ...base }, TODAY)).toBe("unscheduled");
-    expect(releasePhase({ ...base, release: "2026-10-07" }, TODAY)).toBe("released");
-    expect(releasePhase({ ...base, release: "2026-11-05" }, TODAY)).toBe("production");
-    expect(releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", jacketSubmission: "2026-10-22", musicSubmitted: true }, TODAY)).toBe("production");
-    expect(
-      releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", jacketSubmission: "2026-10-22", musicSubmitted: true, jacketSubmitted: true }, TODAY),
-    ).toBe("waiting");
-    expect(releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", musicSubmitted: true }, TODAY)).toBe("waiting");
-    // DEMO・MASTERが未提出なら制作中
-    expect(
-      releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", musicSubmitted: true, demoDeadline: "2026-09-01" }, TODAY),
-    ).toBe("production");
-    expect(
-      releasePhase(
-        { ...base, release: "2026-11-05", musicSubmission: "2026-10-15", musicSubmitted: true, masterDeadline: "2026-10-10", masterSubmitted: true },
-        TODAY,
-      ),
-    ).toBe("waiting");
+  });
+  it("DEMO・MASTER未提出、またはRECが今日以降なら制作中", () => {
+    expect(releasePhase(full, TODAY)).toBe("production");
+    expect(releasePhase({ ...full, demoSubmitted: true }, TODAY)).toBe("production");
+    expect(releasePhase({ ...full, demoSubmitted: true, masterSubmitted: true, recording: "2026-10-07" }, TODAY)).toBe("production");
+  });
+  it("制作が済んで入稿が残っていれば入稿待ち", () => {
+    const made = { ...full, demoSubmitted: true, masterSubmitted: true };
+    expect(releasePhase(made, TODAY)).toBe("submission");
+    expect(releasePhase({ ...made, musicSubmitted: true, jacketSubmitted: true }, TODAY)).toBe("submission");
+  });
+  it("入稿がすべて済めばリリース待ち、カラオケ配信まで終わればリリース済み", () => {
+    const done = { ...full, demoSubmitted: true, masterSubmitted: true, musicSubmitted: true, jacketSubmitted: true, karaokeSubmitted: true };
+    expect(releasePhase(done, TODAY)).toBe("waiting");
+    expect(releasePhase({ ...done, release: "2026-10-01" }, TODAY)).toBe("waiting");
+    expect(releasePhase({ ...done, release: "2026-10-01", karaokeRelease: "2026-10-06" }, TODAY)).toBe("released");
+  });
+  it("日付の無い工程は判定から外す", () => {
+    expect(releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15" }, TODAY)).toBe("submission");
+    expect(releasePhase({ ...base, release: "2026-11-05" }, TODAY)).toBe("waiting");
+    expect(releasePhase({ ...base, release: "2026-10-01" }, TODAY)).toBe("released");
+    expect(releasePhase({ ...base, recording: "2026-10-20" }, TODAY)).toBe("production");
+    expect(releasePhase({ ...base, recording: "2026-09-20" }, TODAY)).toBe("waiting");
   });
 });
 

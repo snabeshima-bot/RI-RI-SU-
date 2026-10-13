@@ -65,6 +65,28 @@ export const tracks = pgTable("tracks", {
   isrc: text("isrc").notNull().default(""),
 });
 
+export const writers = pgTable("writers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** 曲ごとの作家クレジット(作詞・作曲・編曲) */
+export const trackCredits = pgTable(
+  "track_credits",
+  {
+    trackId: integer("track_id")
+      .notNull()
+      .references(() => tracks.id, { onDelete: "cascade" }),
+    writerId: integer("writer_id")
+      .notNull()
+      .references(() => writers.id, { onDelete: "restrict" }),
+    role: text("role").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.trackId, t.writerId, t.role] })],
+);
+
 export const users = pgTable("users", {
   email: text("email").primaryKey(),
   name: text("name"),
@@ -104,3 +126,4 @@ export const reminderLogs = pgTable(
 export type Artist = typeof artists.$inferSelect;
 export type Release = typeof releases.$inferSelect;
 export type Track = typeof tracks.$inferSelect;
+export type Writer = typeof writers.$inferSelect;

@@ -4,7 +4,7 @@ import { deleteRelease, resyncCalendar } from "@/app/actions";
 import { ConfirmButton } from "@/components/confirm-button";
 import { ReleaseForm } from "@/components/release-form";
 import { gcalConfigured } from "@/lib/gcal";
-import { getRelease, listArtists } from "@/lib/queries";
+import { getRelease, listArtists, listWriters } from "@/lib/queries";
 
 export default async function EditReleasePage({
   params,
@@ -15,7 +15,7 @@ export default async function EditReleasePage({
 }) {
   const { id } = await params;
   const { saved } = await searchParams;
-  const [data, artists] = await Promise.all([getRelease(Number(id)), listArtists()]);
+  const [data, artists, writers] = await Promise.all([getRelease(Number(id)), listArtists(), listWriters()]);
   if (!data) notFound();
   const { release, tracks } = data;
   const artist = artists.find((a) => a.id === release.artistId);
@@ -57,7 +57,7 @@ export default async function EditReleasePage({
         </form>
       )}
 
-      <ReleaseForm key={release.updatedAt.toISOString()} artists={artists} release={release} tracks={tracks} />
+      <ReleaseForm key={release.updatedAt.toISOString()} artists={artists} writers={writers} release={release} tracks={tracks} />
     </div>
   );
 }

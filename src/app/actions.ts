@@ -7,11 +7,12 @@ import { z } from "zod";
 import { requireUser } from "@/auth";
 import { getDb, schema } from "@/db";
 import { appUrl } from "@/lib/app-url";
+import { CREDIT_ROLES } from "@/lib/credits";
 import { isValidDate } from "@/lib/dates";
 import { MILESTONE_KEYS } from "@/lib/milestones";
 import { deleteReleaseFromCalendar, syncReleaseToCalendar } from "@/lib/gcal";
 
-const { artists, releases, tracks, users, subscriptions } = schema;
+const { artists, releases, tracks, trackCredits, writers, users, subscriptions } = schema;
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -42,7 +43,19 @@ const releaseSchema = z.object({
   jacketSubmitted: z.boolean(),
   karaokeSubmitted: z.boolean(),
   tracks: z
-    .array(z.object({ title: z.string().trim().max(200), isrc: z.string().trim().max(20).default("") }))
+    .array(
+      z.object({
+        title: z.string().trim().max(200),
+        isrc: z.string().trim().max(20).default(""),
+        credits: z
+          .object({
+            lyrics: z.array(z.number().int().positive()).default([]),
+            composition: z.array(z.number().int().positive()).default([]),
+            arrangement: z.array(z.number().int().positive()).default([]),
+          })
+          .default({ lyrics: [], composition: [], arrangement: [] }),
+      }),
+    )
     .transform((ts) => ts.filter((t) => t.title !== "")),
 });
 
@@ -117,7 +130,16 @@ export async function saveRelease(_prev: FormState, fd: FormData): Promise<FormS
       releaseId = created.id;
     }
     if (trackList.length > 0) {
-      await tx.insert(tracks).values(trackList.map((t, i) => ({ releaseId, trackNo: i + 1, title: t.title, isrc: t.isrc })));
+      const created = await tx
+        .insert(tracks)
+        .values(trackList.map((t, i) => ({ releaseId, trackNo: i + 1, title: t.title, isrc: t.isrc })))
+        .returning({ id: tracks.id });
+      const creditRows = trackList.flatMap((t, i) =>
+        CREDIT_ROLES.flatMap(({ key }) =>
+          [...new Set(t.credits[key])].map((writerId, order) => ({ trackId: created[i].id, writerId, role: key, sortOrder: order })),
+        ),
+      );
+      if (creditRows.length > 0) await tx.insert(trackCredits).values(creditRows);
     }
     return releaseId;
   });
@@ -224,6 +246,51 @@ export async function deleteArtist(_prev: FormState, fd: FormData): Promise<Form
   if (used.length > 0) return { error: "リリースが登録されているアーティストは削除できません" };
   await db.delete(artists).where(eq(artists.id, id));
   revalidatePath("/", "layout");
+  return { ok: "削除しました" };
+}
+
+// ---------- 作家 ----------
+
+const writerName = z.string().trim().min(1, "名前を入力してください").max(100);
+
+/** 作家を登録する(同名がいればそれを返す)。編集画面からその場で追加するときにも使う */
+export async function createWriter(name: string): Promise<{ id: number; name: string } | { error: string }> {
+  await requireUser();
+  const parsed = writerName.safeParse(name);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "名前を確認してください" };
+  const db = getDb();
+  const [existing] = await db.select().from(writers).where(eq(writers.name, parsed.data));
+  if (existing) return { id: existing.id, name: existing.name };
+  const [created] = await db.insert(writers).values({ name: parsed.data }).returning();
+  revalidatePath("/writers");
+  return { id: created.id, name: created.name };
+}
+
+export async function saveWriter(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireUser();
+  const parsed = writerName.safeParse(fd.get("name") ?? "");
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const db = getDb();
+  const id = Number(fd.get("id"));
+  const [dup] = await db.select({ id: writers.id }).from(writers).where(eq(writers.name, parsed.data));
+  if (dup && dup.id !== id) return { error: "同じ名前の作家がすでに登録されています" };
+  if (id) {
+    await db.update(writers).set({ name: parsed.data }).where(eq(writers.id, id));
+  } else {
+    await db.insert(writers).values({ name: parsed.data });
+  }
+  revalidatePath("/", "layout");
+  return { ok: id ? "更新しました" : "追加しました" };
+}
+
+export async function deleteWriter(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requireUser();
+  const id = Number(fd.get("id"));
+  const db = getDb();
+  const used = await db.select({ id: trackCredits.trackId }).from(trackCredits).where(eq(trackCredits.writerId, id)).limit(1);
+  if (used.length > 0) return { error: "担当曲がある作家は削除できません" };
+  await db.delete(writers).where(eq(writers.id, id));
+  revalidatePath("/writers");
   return { ok: "削除しました" };
 }
 
