@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { DaysBadge, MilestoneMarker } from "@/components/milestone-marker";
 import { monthLabel } from "@/lib/board";
 import { diffDays, formatJa, weekday, weekdayLabel } from "@/lib/dates";
-import { MILESTONES } from "@/lib/milestones";
+import { MILESTONES, doneLabelOf } from "@/lib/milestones";
 import type { ReleaseRow } from "@/lib/queries";
 import { buildTimeline, TIMELINE_PAST_DAYS, type TimelineDay, type TimelineEntry } from "@/lib/timeline";
 
@@ -121,7 +121,7 @@ function EntryRow({ entry, today }: { entry: TimelineEntry<ReleaseRow>; today: s
             {m.label.replace(/日$/, "")}
           </span>
           {entry.done ? (
-            <span className="text-xs font-semibold text-emerald-600">✓ 入稿済み</span>
+            <span className="text-xs font-semibold text-emerald-600">✓ {doneLabelOf(entry.key)}</span>
           ) : (
             (days >= 0 || overdue) && <DaysBadge days={days} />
           )}

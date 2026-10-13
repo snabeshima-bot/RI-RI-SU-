@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { DaysBadge, MilestoneMarker } from "@/components/milestone-marker";
 import { groupByMonth, monthLabel, type BoardItem } from "@/lib/board";
 import { addMonths, diffDays, formatJa, startOfMonth } from "@/lib/dates";
-import { MILESTONES } from "@/lib/milestones";
+import { MILESTONES, doneLabelOf } from "@/lib/milestones";
 import type { ReleaseRow } from "@/lib/queries";
 
 const MONTHS = 6;
@@ -101,7 +101,7 @@ function BoardCard({ item, today }: { item: BoardItem<ReleaseRow>; today: string
       <div className="mt-2 flex items-center gap-2">
         <span className="text-lg font-bold tabular-nums">{formatJa(item.date)}</span>
         {item.done ? (
-          <span className="text-xs font-semibold text-emerald-600">✓ 入稿済み</span>
+          <span className="text-xs font-semibold text-emerald-600">✓ {doneLabelOf(item.key)}</span>
         ) : (
           (!past || overdue) && <DaysBadge days={days} />
         )}

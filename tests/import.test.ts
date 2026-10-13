@@ -12,6 +12,10 @@ describe("headerToField", () => {
     expect(headerToField("ティザー 公開")).toBe("teaserRelease");
     expect(headerToField("リリース日")).toBe("release");
     expect(headerToField("曲名")).toBe("title");
+    expect(headerToField("DEMOデータ〆切日")).toBe("demoDeadline");
+    expect(headerToField("Rec日")).toBe("recording");
+    expect(headerToField("MASTER音源〆切")).toBe("masterDeadline");
+    expect(headerToField("マスター〆切")).toBe("masterDeadline");
     expect(headerToField("備考")).toBeNull();
   });
 });

@@ -26,7 +26,7 @@ export default async function SettingsPage() {
       <section className="card p-5">
         <h2 className="font-bold">メールリマインド</h2>
         <p className="mt-1 text-sm text-slate-500">
-          各日付の<strong>{REMIND_DAYS_BEFORE}日前の朝9時</strong>に、選んだアーティストの予定をまとめてメールでお知らせします。入稿済みにした項目は通知されません。
+          各日付の<strong>{REMIND_DAYS_BEFORE}日前の朝9時</strong>に、選んだアーティストの予定をまとめてメールでお知らせします。提出済み・入稿済みにした項目は通知されません。
         </p>
         <SubscriptionForm artists={artists} notifyAll={me?.notifyAll ?? false} subscribed={subs.map((s) => s.artistId)} />
       </section>

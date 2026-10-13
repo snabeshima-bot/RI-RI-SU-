@@ -263,7 +263,7 @@ function Tooltip({ hover, today }: { hover: NonNullable<Hover>; today: string })
         {formatJa(hover.item.date, true)}
         <span className="ml-1.5 text-xs font-normal text-slate-300">
           {days === 0 ? "今日" : days > 0 ? `あと${days}日` : `${-days}日前`}
-          {m.doneKey && (hover.item.done ? " · 入稿済み" : " · 未入稿")}
+          {m.doneKey && (hover.item.done ? ` · ${m.doneLabel}` : " · 未完了")}
         </span>
       </div>
       <div className="mt-0.5 text-slate-300">

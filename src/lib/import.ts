@@ -5,6 +5,13 @@ import type { MilestoneKey } from "./milestones";
 
 /** 見出し → 項目。表記ゆれを吸収するため、空白を除いて部分一致で判定する(長い語から順に) */
 const HEADER_RULES: [string, MilestoneKey | "title"][] = [
+  ["DEMO", "demoDeadline"],
+  ["デモ", "demoDeadline"],
+  ["MASTER", "masterDeadline"],
+  ["マスター", "masterDeadline"],
+  ["REC", "recording"],
+  ["レコーディング", "recording"],
+  ["録音", "recording"],
   ["カラオケ配信データ入稿", "karaokeSubmission"],
   ["カラオケデータ入稿", "karaokeSubmission"],
   ["カラオケ入稿", "karaokeSubmission"],
@@ -25,7 +32,7 @@ const HEADER_RULES: [string, MilestoneKey | "title"][] = [
 ];
 
 export function headerToField(header: string): MilestoneKey | "title" | null {
-  const h = header.replace(/\s/g, "");
+  const h = header.replace(/\s/g, "").toUpperCase();
   if (!h) return null;
   for (const [word, field] of HEADER_RULES) if (h.includes(word)) return field;
   return null;

@@ -40,7 +40,7 @@ export function Roadmap({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500">
-        <span>入稿の完了は、各リリースの編集画面の「入稿済み」チェックで判定します。</span>
+        <span>DEMO・MASTERの提出や入稿の完了は、各リリースの編集画面のチェックで判定します。</span>
         <Link href={toggleAllHref} scroll={false} className="hover:text-slate-800">
           {showAll ? "✓ リリース済みをすべて表示中" : `リリース済みをすべて表示(今は直近${RELEASED_RECENT_DAYS}日)`}
         </Link>

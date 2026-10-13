@@ -1,6 +1,9 @@
 // 5種類の日付(マイルストーン)の定義。表示順・色・リマインド対象はすべてここで管理する。
 
 export const MILESTONE_KEYS = [
+  "demoDeadline",
+  "recording",
+  "masterDeadline",
   "teaserShoot",
   "musicSubmission",
   "jacketSubmission",
@@ -12,7 +15,7 @@ export const MILESTONE_KEYS = [
 
 export type MilestoneKey = (typeof MILESTONE_KEYS)[number];
 
-export type DoneKey = "musicSubmitted" | "jacketSubmitted" | "karaokeSubmitted";
+export type DoneKey = "demoSubmitted" | "masterSubmitted" | "musicSubmitted" | "jacketSubmitted" | "karaokeSubmitted";
 
 export type MilestoneDef = {
   key: MilestoneKey;
@@ -22,6 +25,8 @@ export type MilestoneDef = {
   kind: "submission" | "release" | "event";
   /** 入稿系のみ:完了フラグのカラム */
   doneKey?: DoneKey;
+  /** 完了チェックの文言 */
+  doneLabel?: string;
   /** マーカー・バッジの色 */
   color: string;
   /** 淡い背景色 */
@@ -29,6 +34,34 @@ export type MilestoneDef = {
 };
 
 export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
+  demoDeadline: {
+    key: "demoDeadline",
+    label: "DEMOデータ〆切日",
+    short: "DEMO〆切",
+    kind: "submission",
+    doneKey: "demoSubmitted",
+    doneLabel: "提出済み",
+    color: "#475569",
+    soft: "#e2e8f0",
+  },
+  recording: {
+    key: "recording",
+    label: "REC日",
+    short: "REC",
+    kind: "event",
+    color: "#b45309",
+    soft: "#ffedd5",
+  },
+  masterDeadline: {
+    key: "masterDeadline",
+    label: "MASTER音源〆切日",
+    short: "MASTER〆切",
+    kind: "submission",
+    doneKey: "masterSubmitted",
+    doneLabel: "提出済み",
+    color: "#0891b2",
+    soft: "#cffafe",
+  },
   teaserShoot: {
     key: "teaserShoot",
     label: "ティザー撮影日",
@@ -43,6 +76,7 @@ export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
     short: "楽曲入稿",
     kind: "submission",
     doneKey: "musicSubmitted",
+    doneLabel: "入稿済み",
     color: "#0284c7",
     soft: "#e0f2fe",
   },
@@ -52,6 +86,7 @@ export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
     short: "ジャケ入稿",
     kind: "submission",
     doneKey: "jacketSubmitted",
+    doneLabel: "入稿済み",
     color: "#d97706",
     soft: "#fef3c7",
   },
@@ -77,6 +112,7 @@ export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
     short: "カラオケ入稿",
     kind: "submission",
     doneKey: "karaokeSubmitted",
+    doneLabel: "入稿済み",
     color: "#0d9488",
     soft: "#ccfbf1",
   },
@@ -115,6 +151,10 @@ export type MilestoneItem = {
   date: string;
   done: boolean;
 };
+
+export function doneLabelOf(key: MilestoneKey): string {
+  return MILESTONES[key].doneLabel ?? "完了";
+}
 
 export function milestonesOf(r: MilestoneSource): MilestoneItem[] {
   return MILESTONE_LIST.flatMap((m) => {

@@ -8,8 +8,13 @@ const base = {
   jacketSubmission: null as string | null,
   karaokeRelease: null as string | null,
   karaokeSubmission: null as string | null,
+  demoDeadline: null as string | null,
+  recording: null as string | null,
+  masterDeadline: null as string | null,
   teaserShoot: null as string | null,
   teaserRelease: null as string | null,
+  demoSubmitted: false,
+  masterSubmitted: false,
   musicSubmitted: false,
   jacketSubmitted: false,
   karaokeSubmitted: false,
@@ -43,6 +48,16 @@ describe("releasePhase", () => {
       releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", jacketSubmission: "2026-10-22", musicSubmitted: true, jacketSubmitted: true }, TODAY),
     ).toBe("waiting");
     expect(releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", musicSubmitted: true }, TODAY)).toBe("waiting");
+    // DEMO・MASTERが未提出なら制作中
+    expect(
+      releasePhase({ ...base, release: "2026-11-05", musicSubmission: "2026-10-15", musicSubmitted: true, demoDeadline: "2026-09-01" }, TODAY),
+    ).toBe("production");
+    expect(
+      releasePhase(
+        { ...base, release: "2026-11-05", musicSubmission: "2026-10-15", musicSubmitted: true, masterDeadline: "2026-10-10", masterSubmitted: true },
+        TODAY,
+      ),
+    ).toBe("waiting");
   });
 });
 

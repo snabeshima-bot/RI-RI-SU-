@@ -55,7 +55,7 @@ export function MilestoneLegend() {
       ))}
       <span className="inline-flex items-center gap-1.5 px-1 text-slate-500">
         <MilestoneMarker milestone="musicSubmission" size={12} done />
-        入稿済み
+        提出・入稿済み
       </span>
       <span className="inline-flex items-center gap-1.5 px-1 text-slate-500">
         <MilestoneMarker milestone="musicSubmission" size={12} overdue />

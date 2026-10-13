@@ -10,6 +10,7 @@ import { MILESTONES, RELEASE_TYPES, type MilestoneKey } from "@/lib/milestones";
 type TrackInput = { key: number; title: string; isrc: string };
 
 const GROUPS: { title: string; keys: MilestoneKey[] }[] = [
+  { title: "制作", keys: ["demoDeadline", "recording", "masterDeadline"] },
   { title: "配信", keys: ["musicSubmission", "jacketSubmission", "release"] },
   { title: "ティザー", keys: ["teaserShoot", "teaserRelease"] },
   { title: "カラオケ", keys: ["karaokeSubmission", "karaokeRelease"] },
@@ -103,7 +104,7 @@ export function ReleaseForm({
                     {m.doneKey && (
                       <label className="flex items-center gap-1.5 text-sm text-slate-700">
                         <input type="checkbox" name={m.doneKey} defaultChecked={release?.[m.doneKey] ?? false} className="h-4 w-4 accent-emerald-600" />
-                        入稿済み
+                        {m.doneLabel}
                       </label>
                     )}
                   </div>
