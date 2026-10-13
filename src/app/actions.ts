@@ -34,10 +34,14 @@ const releaseSchema = z.object({
   karaokeSubmission: optionalDate,
   demoDeadline: optionalDate,
   recording: optionalDate,
+  mixDeadline: optionalDate,
+  liveDeadline: optionalDate,
   masterDeadline: optionalDate,
   teaserShoot: optionalDate,
   teaserRelease: optionalDate,
   demoSubmitted: z.boolean(),
+  mixSubmitted: z.boolean(),
+  liveSubmitted: z.boolean(),
   masterSubmitted: z.boolean(),
   musicSubmitted: z.boolean(),
   jacketSubmitted: z.boolean(),
@@ -78,10 +82,14 @@ function parseRelease(fd: FormData) {
     karaokeSubmission: fd.get("karaokeSubmission") ?? "",
     demoDeadline: fd.get("demoDeadline") ?? "",
     recording: fd.get("recording") ?? "",
+    mixDeadline: fd.get("mixDeadline") ?? "",
+    liveDeadline: fd.get("liveDeadline") ?? "",
     masterDeadline: fd.get("masterDeadline") ?? "",
     teaserShoot: fd.get("teaserShoot") ?? "",
     teaserRelease: fd.get("teaserRelease") ?? "",
     demoSubmitted: fd.get("demoSubmitted") === "on",
+    mixSubmitted: fd.get("mixSubmitted") === "on",
+    liveSubmitted: fd.get("liveSubmitted") === "on",
     masterSubmitted: fd.get("masterSubmitted") === "on",
     musicSubmitted: fd.get("musicSubmitted") === "on",
     jacketSubmitted: fd.get("jacketSubmitted") === "on",
@@ -160,7 +168,7 @@ export async function toggleSubmitted(fd: FormData) {
   await requireUser();
   const id = Number(fd.get("id"));
   const field = String(fd.get("field"));
-  if (!["demoSubmitted", "masterSubmitted", "musicSubmitted", "jacketSubmitted", "karaokeSubmitted"].includes(field)) return;
+  if (!["demoSubmitted", "mixSubmitted", "liveSubmitted", "masterSubmitted", "musicSubmitted", "jacketSubmitted", "karaokeSubmitted"].includes(field)) return;
   const value = fd.get("value") === "true";
   await getDb()
     .update(releases)

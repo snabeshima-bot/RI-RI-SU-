@@ -38,6 +38,8 @@ export async function GET(req: Request) {
         eq(releases.karaokeSubmission, target),
         eq(releases.demoDeadline, target),
         eq(releases.recording, target),
+        eq(releases.mixDeadline, target),
+        eq(releases.liveDeadline, target),
         eq(releases.masterDeadline, target),
         eq(releases.teaserShoot, target),
         eq(releases.teaserRelease, target),

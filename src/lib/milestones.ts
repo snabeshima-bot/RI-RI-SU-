@@ -3,6 +3,8 @@
 export const MILESTONE_KEYS = [
   "demoDeadline",
   "recording",
+  "mixDeadline",
+  "liveDeadline",
   "masterDeadline",
   "teaserShoot",
   "musicSubmission",
@@ -15,7 +17,11 @@ export const MILESTONE_KEYS = [
 
 export type MilestoneKey = (typeof MILESTONE_KEYS)[number];
 
-export type DoneKey = "demoSubmitted" | "masterSubmitted" | "musicSubmitted" | "jacketSubmitted" | "karaokeSubmitted";
+export type DoneKey =
+  | "demoSubmitted"
+  | "mixSubmitted"
+  | "liveSubmitted"
+  | "masterSubmitted" | "musicSubmitted" | "jacketSubmitted" | "karaokeSubmitted";
 
 export type MilestoneDef = {
   key: MilestoneKey;
@@ -51,6 +57,26 @@ export const MILESTONES: Record<MilestoneKey, MilestoneDef> = {
     kind: "event",
     color: "#b45309",
     soft: "#ffedd5",
+  },
+  mixDeadline: {
+    key: "mixDeadline",
+    label: "MIX〆切日",
+    short: "MIX〆切",
+    kind: "submission",
+    doneKey: "mixSubmitted",
+    doneLabel: "提出済み",
+    color: "#9333ea",
+    soft: "#f3e8ff",
+  },
+  liveDeadline: {
+    key: "liveDeadline",
+    label: "Live音源〆切日",
+    short: "Live〆切",
+    kind: "submission",
+    doneKey: "liveSubmitted",
+    doneLabel: "提出済み",
+    color: "#e11d48",
+    soft: "#ffe4e6",
   },
   masterDeadline: {
     key: "masterDeadline",

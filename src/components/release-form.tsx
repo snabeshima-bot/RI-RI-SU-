@@ -12,7 +12,7 @@ import { MILESTONES, RELEASE_TYPES, type MilestoneKey } from "@/lib/milestones";
 type TrackInput = { key: number; title: string; isrc: string; credits: TrackCredits };
 
 const GROUPS: { title: string; keys: MilestoneKey[] }[] = [
-  { title: "制作", keys: ["demoDeadline", "recording", "masterDeadline"] },
+  { title: "制作", keys: ["demoDeadline", "recording", "mixDeadline", "liveDeadline", "masterDeadline"] },
   { title: "配信", keys: ["musicSubmission", "jacketSubmission", "release"] },
   { title: "ティザー", keys: ["teaserShoot", "teaserRelease"] },
   { title: "カラオケ", keys: ["karaokeSubmission", "karaokeRelease"] },

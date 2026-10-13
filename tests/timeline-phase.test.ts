@@ -10,10 +10,14 @@ const base = {
   karaokeSubmission: null as string | null,
   demoDeadline: null as string | null,
   recording: null as string | null,
+  mixDeadline: null as string | null,
+  liveDeadline: null as string | null,
   masterDeadline: null as string | null,
   teaserShoot: null as string | null,
   teaserRelease: null as string | null,
   demoSubmitted: false,
+  mixSubmitted: false,
+  liveSubmitted: false,
   masterSubmitted: false,
   musicSubmitted: false,
   jacketSubmitted: false,
@@ -57,6 +61,12 @@ describe("releasePhase", () => {
     expect(releasePhase(full, TODAY)).toBe("production");
     expect(releasePhase({ ...full, demoSubmitted: true }, TODAY)).toBe("production");
     expect(releasePhase({ ...full, demoSubmitted: true, masterSubmitted: true, recording: "2026-10-07" }, TODAY)).toBe("production");
+  });
+  it("MIX・Liveが未提出なら制作中", () => {
+    const made = { ...full, demoSubmitted: true, masterSubmitted: true };
+    expect(releasePhase({ ...made, mixDeadline: "2026-09-15" }, TODAY)).toBe("production");
+    expect(releasePhase({ ...made, liveDeadline: "2026-09-15" }, TODAY)).toBe("production");
+    expect(releasePhase({ ...made, mixDeadline: "2026-09-15", mixSubmitted: true }, TODAY)).toBe("submission");
   });
   it("制作が済んで入稿が残っていれば入稿待ち", () => {
     const made = { ...full, demoSubmitted: true, masterSubmitted: true };

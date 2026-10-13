@@ -2,7 +2,7 @@ import { MILESTONES, milestonesOf, type MilestoneItem, type MilestoneSource } fr
 
 export const PHASES = [
   { key: "unscheduled", label: "日程未定", description: "日付が未入力" },
-  { key: "production", label: "制作中", description: "DEMO・REC・MASTERが残っている" },
+  { key: "production", label: "制作中", description: "DEMO〜MASTERが残っている" },
   { key: "submission", label: "入稿待ち", description: "入稿作業が残っている" },
   { key: "waiting", label: "リリース待ち", description: "入稿完了・配信待ち" },
   { key: "released", label: "リリース済み", description: "配信まで完了" },
@@ -13,7 +13,7 @@ export type Phase = (typeof PHASES)[number]["key"];
 /**
  * リリースの段階を判定する(上から順に当てはまったもの)。日付の入っていない工程は判定に使わない。
  * 1. 日程未定:日付が1つも無い
- * 2. 制作中:DEMO・MASTERが未提出、または REC日が今日以降
+ * 2. 制作中:DEMO・MIX・Live・MASTERが未提出、または REC日が今日以降
  * 3. 入稿待ち:楽曲・ジャケット・カラオケのデータ入稿が未完了
  * 4. リリース待ち:楽曲リリース日が未入力、または楽曲リリース日・カラオケ配信日が今日以降
  * 5. リリース済み
@@ -24,7 +24,13 @@ export function releasePhase(r: MilestoneSource, today: string): Phase {
   const pending = (date: string | null, done: boolean) => !!date && !done;
   const upcoming = (date: string | null) => !!date && date >= today;
 
-  if (pending(r.demoDeadline, r.demoSubmitted) || pending(r.masterDeadline, r.masterSubmitted) || upcoming(r.recording)) {
+  if (
+    pending(r.demoDeadline, r.demoSubmitted) ||
+    pending(r.mixDeadline, r.mixSubmitted) ||
+    pending(r.liveDeadline, r.liveSubmitted) ||
+    pending(r.masterDeadline, r.masterSubmitted) ||
+    upcoming(r.recording)
+  ) {
     return "production";
   }
   if (
