@@ -4,12 +4,14 @@ import { ArtistFilter } from "@/components/artist-filter";
 import { CalendarView } from "@/components/calendar-view";
 import { ListView } from "@/components/list-view";
 import { MilestoneLegend } from "@/components/milestone-marker";
+import { MilestoneTypeFilter } from "@/components/milestone-type-filter";
 import { MonthBoard } from "@/components/month-board";
 import { Roadmap } from "@/components/roadmap";
 import { Timeline } from "@/components/timeline/timeline";
 import { Upcoming } from "@/components/upcoming";
 import { VerticalTimeline } from "@/components/vertical-timeline";
 import { todayJST } from "@/lib/dates";
+import { parseMilestoneTypes } from "@/lib/milestones";
 import { listArtists, listReleases } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +31,7 @@ const WIDE_VIEWS: string[] = ["board", "roadmap"];
 const PAST_VIEWS: string[] = ["list", "timeline", "roadmap"];
 type View = (typeof VIEWS)[number]["key"];
 
-type Search = { artist?: string; view?: string; month?: string; past?: string };
+type Search = { artist?: string; view?: string; month?: string; past?: string; types?: string };
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
@@ -38,6 +40,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   const artistId = artists.some((a) => a.id === Number(sp.artist)) ? Number(sp.artist) : null;
   const view: View = VIEWS.some((v) => v.key === sp.view) ? (sp.view as View) : DEFAULT_VIEW;
+  const types = parseMilestoneTypes(sp.types);
   const month = /^\d{4}-\d{2}$/.test(sp.month ?? "") ? `${sp.month}-01` : today;
   const releases = artistId ? all.filter((r) => r.artistId === artistId) : all;
 
@@ -46,11 +49,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   const href = (patch: Partial<Search>) => {
     const p = new URLSearchParams();
-    const merged = { artist: artistId ? String(artistId) : undefined, view, month: sp.month, past: sp.past, ...patch };
+    const merged = { artist: artistId ? String(artistId) : undefined, view, month: sp.month, past: sp.past, types: sp.types, ...patch };
     if (merged.artist) p.set("artist", merged.artist);
     if (merged.view && merged.view !== DEFAULT_VIEW) p.set("view", merged.view);
     if ((merged.view === "board" || merged.view === "calendar") && merged.month) p.set("month", merged.month);
     if (PAST_VIEWS.includes(merged.view) && merged.past) p.set("past", merged.past);
+    if (merged.view === "calendar" && merged.types) p.set("types", merged.types);
     const s = p.toString();
     return s ? `/?${s}` : "/";
   };
@@ -68,7 +72,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           {VIEWS.map((v) => (
             <Link
               key={v.key}
-              href={href({ view: v.key, past: undefined, month: undefined })}
+              href={href({ view: v.key, past: undefined, month: undefined, types: undefined })}
               scroll={false}
               className={clsx("whitespace-nowrap rounded-lg px-4 py-1.5 font-medium", view === v.key ? "bg-white shadow-sm" : "text-slate-600 hover:text-slate-900")}
             >
@@ -104,7 +108,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           ) : (
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-w-0 space-y-3">
-                <MilestoneLegend />
+                {view !== "calendar" && <MilestoneLegend />}
                 {view === "timeline" && (
                   <VerticalTimeline
                     releases={releases}
@@ -115,7 +119,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 )}
                 {view === "gantt" && <Timeline releases={releases} today={today} />}
                 {view === "calendar" && (
-                  <CalendarView releases={releases} today={today} month={month} hrefForMonth={(m) => href({ month: m })} />
+                  <>
+                    <MilestoneTypeFilter selected={types} hrefFor={(t) => href({ types: t.length ? t.join(",") : undefined })} />
+                    <CalendarView releases={releases} today={today} month={month} types={types} hrefForMonth={(m) => href({ month: m })} />
+                  </>
                 )}
                 {view === "list" && (
                   <>

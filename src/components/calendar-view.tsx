@@ -2,7 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { MilestoneMarker } from "@/components/milestone-marker";
 import { addDays, addMonths, daysInMonth, startOfMonth, weekday, weekdayLabel } from "@/lib/dates";
-import { MILESTONES, milestonesOf } from "@/lib/milestones";
+import { MILESTONES, milestonesOf, type MilestoneKey } from "@/lib/milestones";
 import type { ReleaseRow } from "@/lib/queries";
 
 export function CalendarView({
@@ -10,11 +10,14 @@ export function CalendarView({
   today,
   month,
   hrefForMonth,
+  types = [],
 }: {
   releases: ReleaseRow[];
   today: string;
   month: string;
   hrefForMonth: (month: string) => string;
+  /** 表示する日付の種類(空ならすべて) */
+  types?: MilestoneKey[];
 }) {
   const first = startOfMonth(month);
   const gridStart = addDays(first, -weekday(first));
@@ -24,11 +27,13 @@ export function CalendarView({
   const byDate = new Map<string, { r: ReleaseRow; key: keyof typeof MILESTONES; done: boolean }[]>();
   for (const r of releases) {
     for (const it of milestonesOf(r)) {
+      if (types.length > 0 && !types.includes(it.key)) continue;
       const list = byDate.get(it.date) ?? [];
       list.push({ r, key: it.key, done: it.done });
       byDate.set(it.date, list);
     }
   }
+  const monthCount = [...byDate.entries()].filter(([d]) => d.slice(0, 7) === first.slice(0, 7)).reduce((n, [, l]) => n + l.length, 0);
   const [y, m] = first.split("-").map(Number);
 
   return (
@@ -45,6 +50,9 @@ export function CalendarView({
         </Link>
         <span className="text-base font-bold">
           {y}年{m}月
+        </span>
+        <span className="ml-auto text-xs text-slate-500">
+          {types.length > 0 ? `表示中:${types.map((k) => MILESTONES[k].short).join("・")}` : "すべての日付"}({monthCount}件)
         </span>
       </div>
       <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center text-xs font-semibold">

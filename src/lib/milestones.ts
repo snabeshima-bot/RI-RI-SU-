@@ -198,3 +198,18 @@ export function milestonesOf(r: MilestoneSource): MilestoneItem[] {
     return [{ key: m.key, date, done: m.doneKey ? r[m.doneKey] : false }];
   });
 }
+
+/** URLの "recording,demoDeadline" を有効な種類だけの配列にする(並びは定義順) */
+export function parseMilestoneTypes(param: string | undefined): MilestoneKey[] {
+  if (!param) return [];
+  const wanted = new Set(param.split(","));
+  return MILESTONE_KEYS.filter((k) => wanted.has(k));
+}
+
+/** 種類の選択をオン/オフする(並びは定義順) */
+export function toggleMilestoneType(selected: MilestoneKey[], key: MilestoneKey): MilestoneKey[] {
+  const set = new Set(selected);
+  if (set.has(key)) set.delete(key);
+  else set.add(key);
+  return MILESTONE_KEYS.filter((k) => set.has(k));
+}
