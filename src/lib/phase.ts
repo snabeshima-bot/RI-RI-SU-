@@ -13,11 +13,11 @@ export type Phase = (typeof PHASES)[number]["key"];
 /**
  * リリースの段階を判定する(上から順に当てはまったもの)。日付の入っていない工程は判定に使わない。
  * 1. 日程未定:日付が1つも無い
- * 2. 制作中:DEMO・MIX・Live・MASTERが未提出、または REC日が今日以降
+ * 2. 制作中:DEMO・歌割FIX・Live・MASTERが未完了、または REC日が今日以降
  * 3. 入稿待ち:楽曲・ジャケット・カラオケのデータ入稿が未完了
  * 4. リリース待ち:楽曲リリース日が未入力、または楽曲リリース日・カラオケ配信日が今日以降
  * 5. リリース済み
- * ティザー(撮影・公開)はプロモーションなので段階判定には使わない。
+ * ティザー(撮影・公開)と初披露はプロモーションなので段階判定には使わない。
  */
 export function releasePhase(r: MilestoneSource, today: string): Phase {
   if (milestonesOf(r).length === 0) return "unscheduled";
@@ -26,7 +26,7 @@ export function releasePhase(r: MilestoneSource, today: string): Phase {
 
   if (
     pending(r.demoDeadline, r.demoSubmitted) ||
-    pending(r.mixDeadline, r.mixSubmitted) ||
+    pending(r.utawariFix, r.utawariFixed) ||
     pending(r.liveDeadline, r.liveSubmitted) ||
     pending(r.masterDeadline, r.masterSubmitted) ||
     upcoming(r.recording)

@@ -43,6 +43,20 @@
       "when": 1791884376801,
       "tag": "0005_mix_live",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791960381482,
+      "tag": "0006_utawari_first_performance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791960382608,
+      "tag": "0007_drop_mix",
+      "breakpoints": true
     }
   ]
 }

@@ -4,6 +4,7 @@ import { deleteRelease, resyncCalendar } from "@/app/actions";
 import { ConfirmButton } from "@/components/confirm-button";
 import { ReleaseForm } from "@/components/release-form";
 import { gcalConfigured } from "@/lib/gcal";
+import { scheduleWarnings } from "@/lib/schedule-rules";
 import { getRelease, listArtists, listWriters } from "@/lib/queries";
 
 export default async function EditReleasePage({
@@ -19,6 +20,7 @@ export default async function EditReleasePage({
   if (!data) notFound();
   const { release, tracks } = data;
   const artist = artists.find((a) => a.id === release.artistId);
+  const warnings = scheduleWarnings(release);
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -44,6 +46,16 @@ export default async function EditReleasePage({
         </form>
       </div>
 
+      {warnings.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          <div className="font-bold">⚠ 日程の矛盾があります</div>
+          <ul className="mt-1 list-disc pl-5">
+            {warnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {saved && !release.gcalError && (
         <div className="rounded-lg bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
           保存しました{gcalConfigured() && "(Googleカレンダーにも反映済み)"}

@@ -9,6 +9,7 @@ import { getDb, schema } from "@/db";
 import { appUrl } from "@/lib/app-url";
 import { CREDIT_ROLES } from "@/lib/credits";
 import { isValidDate } from "@/lib/dates";
+import { applyDeadlineDefaults } from "@/lib/schedule-rules";
 import { MILESTONE_KEYS } from "@/lib/milestones";
 import { deleteReleaseFromCalendar, syncReleaseToCalendar } from "@/lib/gcal";
 
@@ -34,13 +35,14 @@ const releaseSchema = z.object({
   karaokeSubmission: optionalDate,
   demoDeadline: optionalDate,
   recording: optionalDate,
-  mixDeadline: optionalDate,
+  utawariFix: optionalDate,
+  firstPerformance: optionalDate,
   liveDeadline: optionalDate,
   masterDeadline: optionalDate,
   teaserShoot: optionalDate,
   teaserRelease: optionalDate,
   demoSubmitted: z.boolean(),
-  mixSubmitted: z.boolean(),
+  utawariFixed: z.boolean(),
   liveSubmitted: z.boolean(),
   masterSubmitted: z.boolean(),
   musicSubmitted: z.boolean(),
@@ -82,13 +84,14 @@ function parseRelease(fd: FormData) {
     karaokeSubmission: fd.get("karaokeSubmission") ?? "",
     demoDeadline: fd.get("demoDeadline") ?? "",
     recording: fd.get("recording") ?? "",
-    mixDeadline: fd.get("mixDeadline") ?? "",
+    utawariFix: fd.get("utawariFix") ?? "",
+    firstPerformance: fd.get("firstPerformance") ?? "",
     liveDeadline: fd.get("liveDeadline") ?? "",
     masterDeadline: fd.get("masterDeadline") ?? "",
     teaserShoot: fd.get("teaserShoot") ?? "",
     teaserRelease: fd.get("teaserRelease") ?? "",
     demoSubmitted: fd.get("demoSubmitted") === "on",
-    mixSubmitted: fd.get("mixSubmitted") === "on",
+    utawariFixed: fd.get("utawariFixed") === "on",
     liveSubmitted: fd.get("liveSubmitted") === "on",
     masterSubmitted: fd.get("masterSubmitted") === "on",
     musicSubmitted: fd.get("musicSubmitted") === "on",
@@ -117,7 +120,9 @@ export async function saveRelease(_prev: FormState, fd: FormData): Promise<FormS
   const user = await requireUser();
   const parsed = parseRelease(fd);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください" };
-  const { tracks: trackList, ...data } = parsed.data;
+  const { tracks: trackList, ...rest } = parsed.data;
+  // MASTER音源・Live音源の〆切が未入力なら、配信データ入稿日・初披露日を入れる
+  const data = applyDeadlineDefaults(rest);
   const idRaw = fd.get("id");
   const db = getDb();
 
@@ -168,7 +173,7 @@ export async function toggleSubmitted(fd: FormData) {
   await requireUser();
   const id = Number(fd.get("id"));
   const field = String(fd.get("field"));
-  if (!["demoSubmitted", "mixSubmitted", "liveSubmitted", "masterSubmitted", "musicSubmitted", "jacketSubmitted", "karaokeSubmitted"].includes(field)) return;
+  if (!["demoSubmitted", "utawariFixed", "liveSubmitted", "masterSubmitted", "musicSubmitted", "jacketSubmitted", "karaokeSubmitted"].includes(field)) return;
   const value = fd.get("value") === "true";
   await getDb()
     .update(releases)

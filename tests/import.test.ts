@@ -16,7 +16,8 @@ describe("headerToField", () => {
     expect(headerToField("Rec日")).toBe("recording");
     expect(headerToField("MASTER音源〆切")).toBe("masterDeadline");
     expect(headerToField("マスター〆切")).toBe("masterDeadline");
-    expect(headerToField("MIX〆切")).toBe("mixDeadline");
+    expect(headerToField("歌割FIX")).toBe("utawariFix");
+    expect(headerToField("初披露日")).toBe("firstPerformance");
     expect(headerToField("Live音源〆切")).toBe("liveDeadline");
     expect(headerToField("ライブ音源")).toBe("liveDeadline");
     expect(headerToField("備考")).toBeNull();

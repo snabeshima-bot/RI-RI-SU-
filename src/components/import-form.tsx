@@ -84,7 +84,7 @@ export function ImportForm({ artists, today }: { artists: Artist[]; today: strin
             }}
           />
           <p className="mt-1 text-xs text-slate-500">
-            読み取れる見出し:曲名 / DEMO〆切 / REC / MIX〆切 / Live〆切 / MASTER〆切 / リリース日 / データ入稿日 / ジャケット入稿日 / ティザー撮影 / ティザー公開 / カラオケ入稿日 / カラオケ配信日。曲名が空欄や番号だけの行は「新曲N(仮)」になります。
+            読み取れる見出し:曲名 / DEMO〆切 / REC / 歌割FIX / Live〆切 / MASTER〆切 / 初披露日 / リリース日 / データ入稿日 / ジャケット入稿日 / ティザー撮影 / ティザー公開 / カラオケ入稿日 / カラオケ配信日。曲名が空欄や番号だけの行は「新曲N(仮)」になります。
           </p>
         </div>
       </section>

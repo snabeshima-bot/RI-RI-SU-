@@ -8,11 +8,13 @@ import { WriterPicker } from "@/components/writer-picker";
 import type { Artist, Release, Track, Writer } from "@/db/schema";
 import { CREDIT_ROLES, emptyCredits, type CreditRole, type TrackCredits } from "@/lib/credits";
 import { MILESTONES, RELEASE_TYPES, type MilestoneKey } from "@/lib/milestones";
+import { deadlineHint } from "@/lib/schedule-rules";
 
 type TrackInput = { key: number; title: string; isrc: string; credits: TrackCredits };
 
 const GROUPS: { title: string; keys: MilestoneKey[] }[] = [
-  { title: "制作", keys: ["demoDeadline", "recording", "mixDeadline", "liveDeadline", "masterDeadline"] },
+  { title: "制作", keys: ["demoDeadline", "recording", "utawariFix", "liveDeadline", "masterDeadline"] },
+  { title: "初披露", keys: ["firstPerformance"] },
   { title: "配信", keys: ["musicSubmission", "jacketSubmission", "release"] },
   { title: "ティザー", keys: ["teaserShoot", "teaserRelease"] },
   { title: "カラオケ", keys: ["karaokeSubmission", "karaokeRelease"] },
@@ -109,6 +111,7 @@ export function ReleaseForm({
                     <label htmlFor={k} className="flex w-full items-center gap-2 text-sm font-semibold" style={{ color: m.color }}>
                       <MilestoneMarker milestone={k} size={14} />
                       {m.label}
+                      {deadlineHint(k) && <span className="text-[11px] font-normal text-slate-500">({deadlineHint(k)})</span>}
                     </label>
                     <input id={k} name={k} type="date" className="input w-44" defaultValue={release?.[k] ?? ""} />
                     {m.doneKey && (

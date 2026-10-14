@@ -4,6 +4,7 @@ import { DaysBadge, MilestoneMarker } from "@/components/milestone-marker";
 import { addDays, diffDays, formatJa } from "@/lib/dates";
 import { MILESTONES, releaseTypeLabel } from "@/lib/milestones";
 import { PHASES, releasePhase, releaseSteps, type Phase } from "@/lib/phase";
+import { scheduleWarnings } from "@/lib/schedule-rules";
 import type { ReleaseRow } from "@/lib/queries";
 
 const RELEASED_RECENT_DAYS = 90;
@@ -76,6 +77,7 @@ function RoadmapCard({ release: r, today }: { release: ReleaseRow; today: string
   const steps = releaseSteps(r, today);
   const next = steps.find((s) => s.state === "next");
   const doneCount = steps.filter((s) => s.state === "done").length;
+  const warnings = scheduleWarnings(r);
 
   return (
     <Link
@@ -84,6 +86,11 @@ function RoadmapCard({ release: r, today }: { release: ReleaseRow; today: string
     >
       <span className="absolute inset-y-0 left-0 w-1.5" style={{ backgroundColor: r.artistColor }} />
       <div className="text-base font-bold leading-snug">{r.title}</div>
+      {warnings.length > 0 && (
+        <div title={warnings.join("\n")} className="mt-1 inline-block rounded-md bg-red-100 px-2 py-0.5 text-[11px] font-bold text-red-700">
+          ⚠ 日程の矛盾 {warnings.length}件
+        </div>
+      )}
       <div className="text-xs text-slate-500">
         {r.artistName} · {releaseTypeLabel(r.type)}
       </div>
