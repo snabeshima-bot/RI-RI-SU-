@@ -16,6 +16,10 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
+  // NRC ALL IN ONE へ移行済みなら、リマインドは移行先の cron が送る（二重送信防止）
+  if (process.env.RELEASE_REDIRECT_URL) {
+    return NextResponse.json({ skipped: "NRC ALL IN ONE へ移行済み（RELEASE_REDIRECT_URL 設定あり）" });
+  }
 
   // ?date=YYYY-MM-DD で「今日」を上書きできる(手動テスト用)。?dry=1 で送信せず結果のみ返す。
   const url = new URL(req.url);

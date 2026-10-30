@@ -1,5 +1,10 @@
 # リリース管理
 
+> **NRC ALL IN ONE SYSTEM へ移行しました。** 画面・データ・リマインドは nrc-system の `/release` に統合されています。
+> データ移行（nrc-system の `scripts/migrate-release-from-neon.mjs`）が済んだら、この Vercel プロジェクトに
+> 環境変数 `RELEASE_REDIRECT_URL`（NRC ALL IN ONE の本番 URL）を設定してください。旧 URL はすべて `/release` へ転送され、
+> このアプリのリマインドメールは停止します（二重送信防止）。
+
 楽曲配信リリースのスケジュールを管理するWebアプリです。
 
 - アーティスト(グループ)ごとのフィルター/全体表示
